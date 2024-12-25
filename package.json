@@ -1,15 +1,53 @@
 {
   "name": "payload-cloudinary",
-  "module": "src/index.ts",
+  "version": "1.0.0",
+  "description": "A Cloudinary storage plugin for Payload CMS",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node",
+    "dev": "bun run src/index.ts",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "payload-cms",
+    "cloudinary",
+    "storage",
+    "plugin",
+    "upload",
+    "media"
+  ],
+  "author": "Syed Muzamil",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syedmuzamilm/payload-cloudinary.git"
+  },
+  "bugs": {
+    "url": "https://github.com/syedmuzamilm/payload-cloudinary/issues"
+  },
+  "homepage": "https://github.com/syedmuzamilm/payload-cloudinary#readme",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "typescript": "^5.0.0",
+    "bun-types": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "payload": "^2.0.0"
   },
   "dependencies": {
     "@payloadcms/plugin-cloud-storage": "^3.11.0",
     "cloudinary": "^2.5.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

@@ -1,0 +1,27 @@
+# Source
+src/
+
+# Tests
+test/
+*.test.ts
+
+# Development configs
+.github/
+.vscode/
+.idea/
+.git/
+.gitignore
+.env*
+tsconfig.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Misc
+.DS_Store
+.cache
+*.tsbuildinfo 

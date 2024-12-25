@@ -15,7 +15,7 @@ A plugin for [Payload CMS](https://payloadcms.com/) that integrates Cloudinary a
 ## Installation
 
 ```bash
-bun install
+npm i payload-cloudinary
 ```
 
 ## Configuration
@@ -72,3 +72,7 @@ This project uses [Bun](https://bun.sh) as its JavaScript runtime. Make sure you
 ## License
 
 This project is open-source. See the LICENSE file for more details.
+
+## Contact
+
+For any questions or support, please contact me at [Syed Muzamil](https://x.com/syedmuzamilm).
