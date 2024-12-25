@@ -14,7 +14,8 @@
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "dev": "bun run src/index.ts",
     "test": "bun test",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "release": "chmod +x ./scripts/publish.sh && ./scripts/publish.sh"
   },
   "keywords": [
     "payload-cms",
