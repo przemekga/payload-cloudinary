@@ -32,5 +32,11 @@ export const getGenerateURL =
     const filePath = path.posix.join(folder, prefix, filename)
     const ext = path.extname(filename).toLowerCase()
     const resourceType = getResourceType(ext)
-    return `https://res.cloudinary.com/${config.cloud_name}/${resourceType}/upload/${filePath}`
+    if (resourceType === 'video') {
+      return `https://res.cloudinary.com/${config.cloud_name}/video/upload/f_auto:video,q_auto/v1/payload-media/${filePath}`
+    } else if (resourceType === 'image') {
+      return `https://res.cloudinary.com/${config.cloud_name}/image/upload/f_auto,q_auto/v1/${filePath}`
+    } else {
+      return `https://res.cloudinary.com/${config.cloud_name}/raw/upload/v1/${filePath}`
+    }
   }
