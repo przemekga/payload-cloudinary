@@ -1,78 +1,65 @@
-import type { HandleUpload } from '@payloadcms/plugin-cloud-storage/types'
-import type { CollectionConfig } from 'payload'
-import type { v2 as cloudinaryType } from 'cloudinary'
-import type { UploadApiOptions } from 'cloudinary'
+import type { HandleUpload } from "@payloadcms/plugin-cloud-storage/types";
+import type { CollectionConfig } from "payload";
+import type { v2 as cloudinaryType } from "cloudinary";
+import type { UploadApiOptions } from "cloudinary";
 
-import path from 'path'
-import stream from 'stream'
+import path from "path";
+import stream from "stream";
+import { getResourceType } from "./utils";
 
 interface Args {
-  cloudinary: typeof cloudinaryType
-  collection: CollectionConfig
-  folder: string
-  prefix?: string
-}
-
-const VIDEO_EXTENSIONS = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v']
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff']
-const RAW_EXTENSIONS = [
-  // Documents
-  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt',
-  // Archives
-  '.zip', '.rar', '.7z', '.tar', '.gz',
-  // Other
-  '.csv', '.json', '.xml', '.md'
-]
-
-const getResourceType = (ext: string): 'video' | 'image' | 'raw' | 'auto' => {
-  if (VIDEO_EXTENSIONS.includes(ext)) return 'video'
-  if (IMAGE_EXTENSIONS.includes(ext)) return 'image'
-  if (RAW_EXTENSIONS.includes(ext)) return 'raw'
-  return 'auto'
+  cloudinary: typeof cloudinaryType;
+  collection: CollectionConfig;
+  folder: string;
+  prefix?: string;
 }
 
 const getUploadOptions = (filename: string): UploadApiOptions => {
-  const ext = path.extname(filename).toLowerCase()
-  const resourceType = getResourceType(ext)
+  const ext = path.extname(filename).toLowerCase();
+  const resourceType = getResourceType(ext);
   const baseOptions: UploadApiOptions = {
     resource_type: resourceType,
     use_filename: true,
-    unique_filename: true
-  }
+    unique_filename: true,
+  };
 
   switch (resourceType) {
-    case 'video':
+    case "video":
       return {
         ...baseOptions,
         chunk_size: 6000000,
-        eager: [{ format: 'mp4', quality: 'auto' }],
-        eager_async: true
-      }
-    case 'image':
+        eager: [{ format: ext, quality: "auto" }],
+        eager_async: true,
+      };
+    case "image":
       return {
         ...baseOptions,
-        eager: [{ quality: 'auto' }],
-        eager_async: true
-      }
-    case 'raw':
+        eager: [{ quality: "auto" }],
+        eager_async: true,
+      };
+    case "raw":
       return {
         ...baseOptions,
-        resource_type: 'raw',
-        use_filename: true
-      }
+        resource_type: "raw",
+        use_filename: true,
+      };
     default:
-      return baseOptions
+      return baseOptions;
   }
-}
+};
 
 export const getHandleUpload =
-  ({ cloudinary, folder, prefix = '' }: Args): HandleUpload =>
+  ({ cloudinary, folder, prefix = "" }: Args): HandleUpload =>
   async ({ data, file }) => {
-    const filePath = path.posix.join(folder, data.prefix || prefix, file.filename)
+    const filePath = path.posix.join(
+      folder,
+      data.prefix || prefix,
+      file.filename
+    );
     const uploadOptions: UploadApiOptions = {
       ...getUploadOptions(file.filename),
-      public_id: filePath.replace(/\.[^/.]+$/, '') // Remove file extension
-    }
+      public_id: filePath.replace(/\.[^/.]+$/, ""), // Remove file extension
+    };
 
     return new Promise((resolve, reject) => {
       try {
@@ -80,11 +67,11 @@ export const getHandleUpload =
           uploadOptions,
           (error, result) => {
             if (error) {
-              console.error('Error uploading to Cloudinary:', error)
-              reject(error)
-              return
+              console.error("Error uploading to Cloudinary:", error);
+              reject(error);
+              return;
             }
-            
+
             if (result) {
               // Add metadata to the response
               data.cloudinary = {
@@ -94,34 +81,34 @@ export const getHandleUpload =
                 secure_url: result.secure_url,
                 bytes: result.bytes,
                 created_at: result.created_at,
-                ...(result.resource_type === 'video' && {
+                ...(result.resource_type === "video" && {
                   duration: result.duration,
                   width: result.width,
                   height: result.height,
-                  eager: result.eager
+                  eager: result.eager,
                 }),
-                ...(result.resource_type === 'image' && {
+                ...(result.resource_type === "image" && {
                   width: result.width,
                   height: result.height,
-                  format: result.format
-                })
-              }
+                  format: result.format,
+                }),
+              };
             }
-            
-            resolve(data)
+
+            resolve(data);
           }
-        )
+        );
 
         // Create readable stream from buffer or file
-        const readableStream = new stream.Readable()
-        readableStream.push(file.buffer)
-        readableStream.push(null)
+        const readableStream = new stream.Readable();
+        readableStream.push(file.buffer);
+        readableStream.push(null);
 
         // Pipe the readable stream to the upload stream
-        readableStream.pipe(uploadStream)
+        readableStream.pipe(uploadStream);
       } catch (error) {
-        console.error('Error in upload process:', error)
-        reject(error)
+        console.error("Error in upload process:", error);
+        reject(error);
       }
-    })
-  }
+    });
+  };
