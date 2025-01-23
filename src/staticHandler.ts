@@ -18,36 +18,57 @@ export const getHandler =
     try {
       const prefix = await getFilePrefix({ collection, filename, req });
       const filePath = path.posix.join(folder, prefix, filename);
-      
-      try {
-        // Determine resource type based on file extension
-        const fileExt = path.extname(filename).toLowerCase();
-        const resourceType = getResourceType(fileExt);
 
-        const result = await cloudinary.api.resource(
-          filePath.replace(/\.[^/.]+$/, ""),
-          {
-            resource_type: resourceType,
-          }
-        );
+      // Determine resource type based on file extension
+      const fileExt = path.extname(filename).toLowerCase();
+      const resourceType = getResourceType(fileExt);
 
-        if (!result || !result.secure_url) {
-          return new Response(null, { status: 404, statusText: "Not Found" });
+      const result = await cloudinary.api.resource(
+        filePath.replace(/\.[^/.]+$/, ""),
+        {
+          resource_type: resourceType,
         }
+      );
 
-        // Redirect to Cloudinary URL
-        return new Response(null, {
-          status: 302,
-          headers: {
-            Location: result.secure_url,
-          },
-        });
-      } catch (error) {
-        console.error("Error serving file from Cloudinary:", error);
-        return new Response("Internal Server Error", { status: 500 });
+      if (!result || !result.secure_url) {
+        return new Response(null, { status: 404, statusText: "Not Found" });
       }
+
+      const response = await fetch(result.secure_url);
+
+      if (!response.ok) {
+        return new Response(null, { status: 404, statusText: "Not Found" });
+      }
+
+      const blob = await response.blob();
+
+      const etagFromHeaders =
+        req.headers.get("etag") || req.headers.get("if-none-match");
+      const objectEtag = req.headers.get("etag") as string;
+
+      if (etagFromHeaders && etagFromHeaders === objectEtag) {
+        return new Response(null, {
+          headers: new Headers({
+            "Content-Type": blob.type,
+            "Content-Length": String(blob.size),
+            ETag: objectEtag,
+          }),
+          status: 304,
+        });
+      }
+
+      // Redirect to Cloudinary URL
+      return new Response(blob, {
+        headers: new Headers({
+          "Content-Type": blob.type,
+          "Content-Length": String(blob.size),
+          ETag: objectEtag,
+        }),
+        status: 200,
+      });
+      
     } catch (error) {
-      console.error("Error in static handler:", error);
+      req.payload.logger.error({ error, message: "Error in statichandler" });
       return new Response("Internal Server Error", { status: 500 });
     }
   };
