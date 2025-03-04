@@ -28,7 +28,7 @@ const getUploadOptions = (filename: string): UploadApiOptions => {
       return {
         ...baseOptions,
         chunk_size: 6000000,
-        eager: [{ format: ext, quality: "auto" }],
+        eager: [{ format: ext.slice(1), quality: "auto" }],
         eager_async: true,
       };
     case "image":

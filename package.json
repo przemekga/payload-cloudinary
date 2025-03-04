@@ -45,7 +45,7 @@
     "payload": "^2.0.0"
   },
   "dependencies": {
-    "@payloadcms/plugin-cloud-storage": "^3.11.0",
+    "@payloadcms/plugin-cloud-storage": "^3.25.0",
     "cloudinary": "^2.5.1"
   },
   "engines": {

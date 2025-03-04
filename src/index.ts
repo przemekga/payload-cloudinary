@@ -118,7 +118,7 @@ function cloudinaryStorageInternal({
         folder,
         prefix,
       }),
-      staticHandler: getHandler({ cloudinary, collection, folder }),
+      staticHandler: getHandler({ cloudinary, collection, folder }),   
     }
   }
 }
