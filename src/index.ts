@@ -4,7 +4,7 @@ import type {
   CollectionOptions,
   GeneratedAdapter,
 } from '@payloadcms/plugin-cloud-storage/types'
-import type { Config, Plugin, UploadCollectionSlug } from 'payload'
+import type { Config } from 'payload'
 
 import { v2 as cloudinary } from 'cloudinary'
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
@@ -13,42 +13,9 @@ import { getGenerateURL } from './generateURL'
 import { getHandleDelete } from './handleDelete'
 import { getHandleUpload } from './handleUpload'
 import { getHandler } from './staticHandler'
+import type { CloudinaryStorageOptions, CloudinaryStoragePlugin, CloudinaryMetadata, CloudinaryAdapter } from './types'
 
-export type CloudinaryStorageOptions = {
-  /**
-   * Collection options to apply the Cloudinary adapter to.
-   */
-  collections: Partial<Record<UploadCollectionSlug, Omit<CollectionOptions, 'adapter'> | true>>
-
-  /**
-   * Cloudinary configuration
-   */
-  config: {
-    cloud_name: string
-    api_key: string
-    api_secret: string
-  }
-
-  /**
-   * Folder path in Cloudinary where files will be uploaded
-   * @default 'payload-media'
-   */
-  folder?: string
-
-  /**
-   * Whether or not to disable local storage
-   * @default true
-   */
-  disableLocalStorage?: boolean
-
-  /**
-   * Whether or not to enable the plugin
-   * @default true
-   */
-  enabled?: boolean
-}
-
-type CloudinaryStoragePlugin = (cloudinaryArgs: CloudinaryStorageOptions) => Plugin
+export type { CloudinaryStorageOptions, CloudinaryStoragePlugin, CloudinaryMetadata, CloudinaryAdapter }
 
 export const cloudinaryStorage: CloudinaryStoragePlugin =
   (cloudinaryOptions: CloudinaryStorageOptions) =>
