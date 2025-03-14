@@ -19,7 +19,9 @@ const getResourceType = (ext: string): string => {
 export const getGenerateURL =
   ({ config, folder }: Args): GenerateURL =>
   ({ filename, prefix = "" }) => {
-    const filePath = path.posix.join(folder, prefix, filename);
+    // Construct the folder path with proper handling of prefix
+    const folderPath = prefix ? path.posix.join(folder, prefix) : folder;
+    const filePath = path.posix.join(folderPath, filename);
     const ext = path.extname(filename).toLowerCase();
     const resourceType = getResourceType(ext);
     const baseUrl = `https://res.cloudinary.com/${config.cloud_name}`;

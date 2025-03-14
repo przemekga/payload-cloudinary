@@ -51,14 +51,18 @@ const getUploadOptions = (filename: string): UploadApiOptions => {
 export const getHandleUpload =
   ({ cloudinary, folder, prefix = "" }: Args): HandleUpload =>
   async ({ data, file }) => {
-    const filePath = path.posix.join(
-      folder,
-      data.prefix || prefix,
-      file.filename
-    );
+    // Construct the folder path with proper handling of prefix
+    const folderPath = data.prefix 
+      ? path.posix.join(folder, data.prefix) 
+      : path.posix.join(folder, prefix);
+    
+    const filePath = path.posix.join(folderPath, file.filename);
     const uploadOptions: UploadApiOptions = {
       ...getUploadOptions(file.filename),
       public_id: filePath.replace(/\.[^/.]+$/, ""), // Remove file extension
+      folder: folderPath, // Explicitly set the folder
+      use_filename: true,
+      unique_filename: true,
     };
 
     return new Promise((resolve, reject) => {
