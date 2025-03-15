@@ -50,69 +50,70 @@ const getUploadOptions = (filename: string): UploadApiOptions => {
 
 export const getHandleUpload =
   ({ cloudinary, folder, prefix = "" }: Args): HandleUpload =>
-  async ({ data, file }) => {
-    // Construct the folder path with proper handling of prefix
-    const folderPath = data.prefix 
-      ? path.posix.join(folder, data.prefix) 
-      : path.posix.join(folder, prefix);
-    
-    const filePath = path.posix.join(folderPath, file.filename);
-    const uploadOptions: UploadApiOptions = {
-      ...getUploadOptions(file.filename),
-      public_id: filePath.replace(/\.[^/.]+$/, ""), // Remove file extension
-      folder: folderPath, // Explicitly set the folder
-      use_filename: true,
-      unique_filename: true,
-    };
+    async ({ data, file }) => {
+      // Construct the folder path with proper handling of prefix
+      const folderPath = data.prefix
+        ? path.posix.join(folder, data.prefix)
+        : path.posix.join(folder, prefix);
 
-    return new Promise((resolve, reject) => {
-      try {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          uploadOptions,
-          (error, result) => {
-            if (error) {
-              console.error("Error uploading to Cloudinary:", error);
-              reject(error);
-              return;
-            }
+      const uploadOptions: UploadApiOptions = {
+        ...getUploadOptions(file.filename),
+        public_id: path.posix.join(
+          folderPath,
+          path.basename(file.filename, path.extname(file.filename)),
+        ),
+        use_filename: true,
+        unique_filename: true,
+      };
 
-            if (result) {
-              // Add metadata to the response
-              data.cloudinary = {
-                public_id: result.public_id,
-                resource_type: result.resource_type,
-                format: result.format,
-                secure_url: result.secure_url,
-                bytes: result.bytes,
-                created_at: result.created_at,
-                ...(result.resource_type === "video" && {
-                  duration: result.duration,
-                  width: result.width,
-                  height: result.height,
-                  eager: result.eager,
-                }),
-                ...(result.resource_type === "image" && {
-                  width: result.width,
-                  height: result.height,
+      return new Promise((resolve, reject) => {
+        try {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            uploadOptions,
+            (error, result) => {
+              if (error) {
+                console.error("Error uploading to Cloudinary:", error);
+                reject(error);
+                return;
+              }
+
+              if (result) {
+                // Add metadata to the response
+                data.cloudinary = {
+                  public_id: result.public_id,
+                  resource_type: result.resource_type,
                   format: result.format,
-                }),
-              };
-            }
+                  secure_url: result.secure_url,
+                  bytes: result.bytes,
+                  created_at: result.created_at,
+                  ...(result.resource_type === "video" && {
+                    duration: result.duration,
+                    width: result.width,
+                    height: result.height,
+                    eager: result.eager,
+                  }),
+                  ...(result.resource_type === "image" && {
+                    width: result.width,
+                    height: result.height,
+                    format: result.format,
+                  }),
+                };
+              }
 
-            resolve(data);
-          }
-        );
+              resolve(data);
+            },
+          );
 
-        // Create readable stream from buffer or file
-        const readableStream = new stream.Readable();
-        readableStream.push(file.buffer);
-        readableStream.push(null);
+          // Create readable stream from buffer or file
+          const readableStream = new stream.Readable();
+          readableStream.push(file.buffer);
+          readableStream.push(null);
 
-        // Pipe the readable stream to the upload stream
-        readableStream.pipe(uploadStream);
-      } catch (error) {
-        console.error("Error in upload process:", error);
-        reject(error);
-      }
-    });
-  };
+          // Pipe the readable stream to the upload stream
+          readableStream.pipe(uploadStream);
+        } catch (error) {
+          console.error("Error in upload process:", error);
+          reject(error);
+        }
+      });
+    };
